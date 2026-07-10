@@ -14,9 +14,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Domain\\CloudInvoice.Identity.Domain.csproj",
-      "projectName": "CloudInvoice.Identity.Domain",
-      "projectPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Domain\\CloudInvoice.Identity.Domain.csproj",
+      "projectUniqueName": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Domain\\Identity.Domain.csproj",
+      "projectName": "Identity.Domain",
+      "projectPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Domain\\Identity.Domain.csproj",
       "packagesPath": "C:\\Users\\nuno-\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Domain\\obj\\",
       "projectStyle": "PackageReference",
