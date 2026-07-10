@@ -1,0 +1,12 @@
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\bin\Debug\net10.0\CloudInvoice.Identity.Domain.deps.json
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\bin\Debug\net10.0\CloudInvoice.Identity.Domain.dll
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\bin\Debug\net10.0\CloudInvoice.Identity.Domain.pdb
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\obj\Debug\net10.0\CloudInvoice.Identity.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\obj\Debug\net10.0\CloudInvoice.Identity.Domain.AssemblyInfoInputs.cache
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\obj\Debug\net10.0\CloudInvoice.Identity.Domain.AssemblyInfo.cs
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\obj\Debug\net10.0\CloudInvoice.Identity.Domain.csproj.CoreCompileInputs.cache
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\obj\Debug\net10.0\CloudInvoice.Identity.Domain.sourcelink.json
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\obj\Debug\net10.0\CloudInvoice.Identity.Domain.dll
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\obj\Debug\net10.0\refint\CloudInvoice.Identity.Domain.dll
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\obj\Debug\net10.0\CloudInvoice.Identity.Domain.pdb
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Domain\obj\Debug\net10.0\ref\CloudInvoice.Identity.Domain.dll

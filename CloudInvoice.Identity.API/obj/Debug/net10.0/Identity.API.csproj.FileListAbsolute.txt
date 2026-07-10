@@ -1,0 +1,9 @@
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.API\obj\Debug\net10.0\Identity.API.csproj.AssemblyReference.cache
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.API\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.API\obj\Debug\net10.0\Identity.API.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.API\obj\Debug\net10.0\Identity.API.AssemblyInfoInputs.cache
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.API\obj\Debug\net10.0\Identity.API.AssemblyInfo.cs
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.API\obj\Debug\net10.0\Identity.API.csproj.CoreCompileInputs.cache
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.API\obj\Debug\net10.0\Identity.API.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.API\obj\Debug\net10.0\Identity.API.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.API\obj\Debug\net10.0\Identity.API.sourcelink.json

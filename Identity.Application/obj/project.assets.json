@@ -2,28 +2,28 @@
   "version": 4,
   "targets": {
     "net10.0": {
-      "Identity.Domain/1.0.0": {
+      "CloudInvoice.Identity.Domain/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "compile": {
-          "bin/placeholder/Identity.Domain.dll": {}
+          "bin/placeholder/CloudInvoice.Identity.Domain.dll": {}
         },
         "runtime": {
-          "bin/placeholder/Identity.Domain.dll": {}
+          "bin/placeholder/CloudInvoice.Identity.Domain.dll": {}
         }
       }
     }
   },
   "libraries": {
-    "Identity.Domain/1.0.0": {
+    "CloudInvoice.Identity.Domain/1.0.0": {
       "type": "project",
-      "path": "../Identity.Domain/Identity.Domain.csproj",
-      "msbuildProject": "../Identity.Domain/Identity.Domain.csproj"
+      "path": "../Identity.Domain/CloudInvoice.Identity.Domain.csproj",
+      "msbuildProject": "../Identity.Domain/CloudInvoice.Identity.Domain.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-      "Identity.Domain >= 1.0.0"
+      "CloudInvoice.Identity.Domain >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -33,9 +33,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Application\\Identity.Application.csproj",
-      "projectName": "Identity.Application",
-      "projectPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Application\\Identity.Application.csproj",
+      "projectUniqueName": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Application\\CloudInvoice.Identity.Application.csproj",
+      "projectName": "CloudInvoice.Identity.Application",
+      "projectPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Application\\CloudInvoice.Identity.Application.csproj",
       "packagesPath": "C:\\Users\\nuno-\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Application\\obj\\",
       "projectStyle": "PackageReference",
@@ -59,8 +59,8 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Domain\\Identity.Domain.csproj": {
-              "projectPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Domain\\Identity.Domain.csproj"
+            "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Domain\\CloudInvoice.Identity.Domain.csproj": {
+              "projectPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Domain\\CloudInvoice.Identity.Domain.csproj"
             }
           }
         }

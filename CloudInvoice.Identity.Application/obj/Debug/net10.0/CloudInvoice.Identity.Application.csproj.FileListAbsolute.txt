@@ -1,0 +1,16 @@
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\bin\Debug\net10.0\CloudInvoice.Identity.Application.deps.json
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\bin\Debug\net10.0\CloudInvoice.Identity.Application.dll
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\bin\Debug\net10.0\CloudInvoice.Identity.Application.pdb
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\bin\Debug\net10.0\CloudInvoice.Identity.Domain.dll
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\bin\Debug\net10.0\CloudInvoice.Identity.Domain.pdb
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\obj\Debug\net10.0\CloudInvoice.Identity.Application.csproj.AssemblyReference.cache
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\obj\Debug\net10.0\CloudInvoice.Identity.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\obj\Debug\net10.0\CloudInvoice.Identity.Application.AssemblyInfoInputs.cache
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\obj\Debug\net10.0\CloudInvoice.Identity.Application.AssemblyInfo.cs
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\obj\Debug\net10.0\CloudInvoice.Identity.Application.csproj.CoreCompileInputs.cache
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\obj\Debug\net10.0\CloudInvoice.Identity.Application.sourcelink.json
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\obj\Debug\net10.0\CloudInv.78AF31CD.Up2Date
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\obj\Debug\net10.0\CloudInvoice.Identity.Application.dll
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\obj\Debug\net10.0\refint\CloudInvoice.Identity.Application.dll
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\obj\Debug\net10.0\CloudInvoice.Identity.Application.pdb
+C:\Users\nuno-\source\repos\CloudInvoice-Atec\cloudinvoice-identity-api\Identity.Application\obj\Debug\net10.0\ref\CloudInvoice.Identity.Application.dll
