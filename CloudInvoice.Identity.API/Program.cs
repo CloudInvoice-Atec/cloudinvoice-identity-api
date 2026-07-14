@@ -7,8 +7,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppIdentityDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
