@@ -15,7 +15,7 @@ namespace CloudInvoice.Identity.Infrastructure.Authentication
         public TokenService(IConfiguration config)
         {
             // A chave deve estar no appsettings.json
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"]));
+            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Secret"]));
         }
 
         public string CreateToken(IdentityUser user)
