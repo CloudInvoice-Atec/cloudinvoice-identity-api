@@ -1,1 +1,7 @@
-.vs/ 
+# Build results
+[Bb]in/
+[Oo]bj/
+*.user
+*.lock.json
+*.db
+/.vs
