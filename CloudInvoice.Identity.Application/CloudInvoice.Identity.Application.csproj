@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.28" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CloudInvoice.Identity.Domain\CloudInvoice.Identity.Domain.csproj" />
   </ItemGroup>
 

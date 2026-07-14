@@ -1,7 +1,6 @@
 using CloudInvoice.Identity.Application.Dtos.Requests;
 using CloudInvoice.Identity.Application.Dtos.Responses;
 using CloudInvoice.Identity.Application.Interfaces;
-using Identity.Application.DTOs.Requests;
 using Microsoft.AspNetCore.Identity;
 
 namespace CloudInvoice.Identity.Application.Services

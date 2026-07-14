@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Identity.Application.DTOs.Requests
+namespace CloudInvoice.Identity.Application.Dtos.Requests
 {
     public class RegisterRequestDto
     {
