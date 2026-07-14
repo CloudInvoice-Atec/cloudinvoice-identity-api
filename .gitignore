@@ -4,4 +4,4 @@
 *.user
 *.lock.json
 *.db
-/.vs
+.vs/
