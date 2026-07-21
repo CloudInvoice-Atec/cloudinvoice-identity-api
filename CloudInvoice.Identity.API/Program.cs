@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using CloudInvoice.Identity.Infrastructure;
+using CloudInvoice.Identity.Infrastructure.Data;
+
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);

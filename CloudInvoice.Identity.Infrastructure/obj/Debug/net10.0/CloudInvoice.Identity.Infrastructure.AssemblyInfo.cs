@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CloudInvoice.Identity.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+31cd2f184a54f70895bec05e71a9b1ee83486eda")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bf39038fc8c4bc63ed9446a3906e79fefb2d4bde")]
 [assembly: System.Reflection.AssemblyProductAttribute("CloudInvoice.Identity.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CloudInvoice.Identity.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
