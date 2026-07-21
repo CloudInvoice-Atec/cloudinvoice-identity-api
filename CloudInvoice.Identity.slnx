@@ -1,6 +1,6 @@
 <Solution>
-  <Project Path="Identity.API/Identity.API.csproj" />
-  <Project Path="Identity.Application/Identity.Application.csproj" />
-  <Project Path="Identity.Domain/Identity.Domain.csproj" />
-  <Project Path="Identity.Infrastructure/Identity.Infrastructure.csproj" />
+  <Project Path="CloudInvoice.Identity.API/CloudInvoice.Identity.API.csproj" />
+  <Project Path="CloudInvoice.Identity.Application/CloudInvoice.Identity.Application.csproj" />
+  <Project Path="CloudInvoice.Identity.Domain/CloudInvoice.Identity.Domain.csproj" />
+  <Project Path="CloudInvoice.Identity.Infrastructure/CloudInvoice.Identity.Infrastructure.csproj" />
 </Solution>

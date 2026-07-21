@@ -33,11 +33,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\CloudInvoice.Identity.Application\\CloudInvoice.Identity.Application.csproj",
-      "projectName": "CloudInvoice.Identity.Application",
-      "projectPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\CloudInvoice.Identity.Application\\CloudInvoice.Identity.Application.csproj",
+      "projectUniqueName": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Application\\Identity.Application.csproj",
+      "projectName": "Identity.Application",
+      "projectPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Application\\Identity.Application.csproj",
       "packagesPath": "C:\\Users\\nuno-\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\CloudInvoice.Identity.Application\\obj\\",
+      "outputPath": "C:\\Users\\nuno-\\source\\repos\\CloudInvoice-Atec\\cloudinvoice-identity-api\\Identity.Application\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
