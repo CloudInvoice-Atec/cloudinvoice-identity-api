@@ -1,4 +1,7 @@
+using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Infrastructure;
+using CloudInvoice.Identity.Infrastructure.Data;
+using CloudInvoice.Identity.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -35,6 +38,8 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey))
     };
 });
+
+builder.Services.AddScoped<IHealthCheckService, HealthCheckService>();
 
 var app = builder.Build();
 
