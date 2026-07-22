@@ -1,12 +1,11 @@
-using CloudInvoice.Identity.Domain.Entities;
+using CloudInvoice.Identity.Application.Dtos;
+using CloudInvoice.Identity.Application.Dtos.Responses;
+using Identity.Application.DTOs.Requests;
 
-namespace CloudInvoice.Identity.Domain.Interfaces
+namespace CloudInvoice.Identity.Application.Interfaces;
+
+public interface IAuthService
 {
-    public interface IAuthService
-    {
-        Task<ApplicationUser?> GetByIdAsync(string id);
-        Task<ApplicationUser?> GetByEmailAsync(string email);
-        Task<bool> CreateUserAsync(ApplicationUser user, string password);
-        Task<bool> CheckPasswordAsync(ApplicationUser user, string password);
-    }
+    Task<AuthResponseDto> RegisterAsync(RegisterRequestDto model);
+    Task<AuthResponseDto> LoginAsync(LoginRequestDto model);
 }
