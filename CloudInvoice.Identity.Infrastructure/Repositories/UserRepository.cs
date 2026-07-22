@@ -1,6 +1,7 @@
 using CloudInvoice.Identity.Domain.Entities;
 using CloudInvoice.Identity.Domain.Interfaces;
 using CloudInvoice.Identity.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace CloudInvoice.Identity.Infrastructure.Repositories;
@@ -8,10 +9,12 @@ namespace CloudInvoice.Identity.Infrastructure.Repositories;
 public class UserRepository : IUserRepository
 {
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public UserRepository(ApplicationDbContext context)
+    public UserRepository(ApplicationDbContext context, UserManager<ApplicationUser> userManager    )
     {
         _context = context;
+        _userManager = userManager;
     }
     public async Task<ApplicationUser?> GetByIdAsync(string id)
     {
@@ -40,19 +43,15 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> CreateUserAsync(ApplicationUser user, string password)
     {
-        // Aqui você pode adicionar lógica para criar o usuário com a senha
-        // Por exemplo, você pode usar um serviço de hashing de senha
-        // Para simplificação, vamos apenas salvar o usuário sem a senha
-        await AddAsync(user);
-        return true;
+        // Usa o UserManager para criar o utilizador e fazer o hash seguro da password
+        var result = await _userManager.CreateAsync(user, password);
+        return result.Succeeded;
     }
-    
 
     public async Task<bool> CheckPasswordAsync(ApplicationUser user, string password)
     {
-        // Aqui você pode adicionar lógica para verificar a senha
-        // Por exemplo, você pode usar um serviço de hashing de senha
-        // Para simplificação, vamos apenas retornar true
-        return true;
+        // Valida se a password inserida bate certo com o hash guardado na base de dados
+        var result = await _userManager.CheckPasswordAsync(user, password);
+        return result;
     }
 }
