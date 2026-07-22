@@ -1,9 +1,10 @@
+using CloudInvoice.Identity.Application.Interfaces;
+using CloudInvoice.Identity.Infrastructure.Data;
+using CloudInvoice.Identity.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using CloudInvoice.Identity.Infrastructure.Data;
-
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +50,8 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero // Para o token expirar exatamente na hora, sem os 5 mins de tolerância do .NET
     };
 });
+
+builder.Services.AddScoped<IHealthCheckService, HealthCheckService>();
 
 builder.Services.AddControllers();
 
