@@ -43,6 +43,7 @@ builder.Services.AddScoped<IHealthCheckService, HealthCheckService>();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
 
 // 5. Executar o Seeder de Roles ao iniciar a aplicação
 using (var scope = app.Services.CreateScope())
