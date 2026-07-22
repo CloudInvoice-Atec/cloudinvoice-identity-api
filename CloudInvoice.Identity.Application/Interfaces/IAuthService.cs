@@ -2,7 +2,7 @@ using CloudInvoice.Identity.Domain.Entities;
 
 namespace CloudInvoice.Identity.Domain.Interfaces
 {
-    public interface IUserRepository
+    public interface IAuthService
     {
         Task<ApplicationUser?> GetByIdAsync(string id);
         Task<ApplicationUser?> GetByEmailAsync(string email);

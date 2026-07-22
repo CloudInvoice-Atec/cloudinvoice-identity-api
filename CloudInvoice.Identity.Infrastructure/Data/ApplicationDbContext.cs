@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CloudInvoice.Identity.Infrastructure.Data
 {
-    public class AppIdentityDbContext : IdentityDbContext<IdentityUser>
+    public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
-        public AppIdentityDbContext(DbContextOptions<AppIdentityDbContext> options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
