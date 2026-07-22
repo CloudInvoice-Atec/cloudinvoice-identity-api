@@ -1,5 +1,4 @@
 using CloudInvoice.Identity.Infrastructure;
-using CloudInvoice.Identity.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
