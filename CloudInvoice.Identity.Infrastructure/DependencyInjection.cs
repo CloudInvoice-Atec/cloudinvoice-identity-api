@@ -29,7 +29,8 @@ public static class DependencyInjection
             options.Password.RequiredLength = 6;
         })
         .AddEntityFrameworkStores<ApplicationDbContext>()
-        .AddDefaultTokenProviders();
+        .AddDefaultTokenProviders()
+        .AddErrorDescriber<CustomIdentityErrorService>();
 
         // 3. Registar Repositórios e Serviços de Infraestrutura
         services.AddScoped<IUserRepository, UserRepository>();

@@ -13,19 +13,32 @@ public class AuthService : IAuthService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenService _tokenService;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        ITokenService tokenService)
+        ITokenService tokenService,
+        RoleManager<IdentityRole> roleManager)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _tokenService = tokenService;
+        _roleManager = roleManager;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto model)
     {
+        var roleExists = await _roleManager.RoleExistsAsync(model.Role);
+        if (!roleExists)
+        {
+            return new AuthResponseDto
+            {
+                IsSuccess = false,
+                Message = $"A role '{model.Role}' não existe no sistema."
+            };
+        }
+
         var existingUser = await _userManager.FindByEmailAsync(model.Email);
         if (existingUser != null)
         {
@@ -55,8 +68,16 @@ public class AuthService : IAuthService
             };
         }
 
-        // Atribuir o papel padrão (por exemplo, "User") ao novo registo
-        await _userManager.AddToRoleAsync(user, "User");
+        var roleToAssign = string.Equals(model.Role, "Admin", StringComparison.OrdinalIgnoreCase) ? "Admin" : "Contabilista";
+
+        if (await _roleManager.RoleExistsAsync(roleToAssign))
+        {
+            await _userManager.AddToRoleAsync(user, roleToAssign);
+        }
+        else
+        {
+            await _userManager.AddToRoleAsync(user, "Contabilista"); // Fallback de segurança
+        }
 
         var token = await _tokenService.GenerateTokenAsync(user);
 
