@@ -1,3 +1,4 @@
+using CloudInvoice.Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -7,18 +8,40 @@ public static class RoleSeeder
 {
     public static async Task SeedRolesAsync(IServiceProvider serviceProvider)
     {
-        // Resolvemos o RoleManager através do container de injeção de dependências
-        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        using var scope = serviceProvider.CreateScope();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        // Define os roles que queres ter no teu sistema
-        string[] roles = { "Contabilista", "Utilizador"};
-
-        foreach (var role in roles)
+        // 1. Garantir que a role Admin existe
+        if (!await roleManager.RoleExistsAsync("Admin"))
         {
-            // Se o role ainda não existir na base de dados, é criado
-            if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
+        }
+
+        // 2. Garantir que a role Contabilista existe
+        if (!await roleManager.RoleExistsAsync("Contabilista"))
+        {
+            await roleManager.CreateAsync(new IdentityRole("Contabilista"));
+        }
+
+        // 3. Criar o utilizador Admin se não existir
+        var adminEmail = "admin@cloudinvoice.com";
+        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        if (adminUser == null)
+        {
+            adminUser = new ApplicationUser
             {
-                await roleManager.CreateAsync(new IdentityRole(role));
+                UserName = adminEmail,
+                Email = adminEmail,
+                FirstName = "Admin",
+                LastName = "CloudInvoice",
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(adminUser, "Atec@123");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(adminUser, "Admin");
             }
         }
     }

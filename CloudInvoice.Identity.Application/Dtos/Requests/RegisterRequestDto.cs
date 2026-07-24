@@ -12,7 +12,7 @@ namespace Identity.Application.DTOs.Requests
         public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Campo obrigatório.")]
-        public string Role { get; set; } = string.Empty;
+        public string Role { get; set; } = "Contabilista";
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
     }

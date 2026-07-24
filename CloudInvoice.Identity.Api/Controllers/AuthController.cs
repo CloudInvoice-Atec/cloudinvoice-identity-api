@@ -1,5 +1,6 @@
 using CloudInvoice.Identity.Application.Interfaces;
 using Identity.Application.DTOs.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CloudInvoice.Identity.Api.Controllers;
@@ -16,6 +17,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
     {
         if (!ModelState.IsValid)
