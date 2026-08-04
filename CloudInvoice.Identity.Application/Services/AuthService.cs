@@ -1,35 +1,25 @@
-using CloudInvoice.Identity.Application.Dtos;
+using CloudInvoice.Identity.Application.Dtos.Requests;
 using CloudInvoice.Identity.Application.Dtos.Responses;
 using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Domain.Entities;
 using CloudInvoice.Identity.Domain.Interfaces;
-using Identity.Application.DTOs.Requests;
-using Microsoft.AspNetCore.Identity;
 
 namespace CloudInvoice.Identity.Application.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IUserRepository _userRepository;
     private readonly ITokenService _tokenService;
-    private readonly RoleManager<IdentityRole> _roleManager;
 
-    public AuthService(
-        UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager,
-        ITokenService tokenService,
-        RoleManager<IdentityRole> roleManager)
+    public AuthService(IUserRepository userRepository, ITokenService tokenService)
     {
-        _userManager = userManager;
-        _signInManager = signInManager;
+        _userRepository = userRepository;
         _tokenService = tokenService;
-        _roleManager = roleManager;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto model)
     {
-        var roleExists = await _roleManager.RoleExistsAsync(model.Role);
+        var roleExists = await _userRepository.RoleExistsAsync(model.Role);
         if (!roleExists)
         {
             return new AuthResponseDto
@@ -39,7 +29,7 @@ public class AuthService : IAuthService
             };
         }
 
-        var existingUser = await _userManager.FindByEmailAsync(model.Email);
+        var existingUser = await _userRepository.GetByEmailAsync(model.Email);
         if (existingUser != null)
         {
             return new AuthResponseDto
@@ -57,26 +47,30 @@ public class AuthService : IAuthService
             LastName = model.LastName
         };
 
-        var result = await _userManager.CreateAsync(user, model.Password);
-        if (!result.Succeeded)
+        var created = await _userRepository.CreateUserAsync(user, model.Password);
+        if (!created)
         {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
             return new AuthResponseDto
             {
                 IsSuccess = false,
-                Message = $"Erro no registo: {errors}"
+                Message = "Erro no registo do utilizador."
             };
         }
 
         var roleToAssign = string.Equals(model.Role, "Admin", StringComparison.OrdinalIgnoreCase) ? "Admin" : "Contabilista";
-
-        if (await _roleManager.RoleExistsAsync(roleToAssign))
+        if (!await _userRepository.RoleExistsAsync(roleToAssign))
         {
-            await _userManager.AddToRoleAsync(user, roleToAssign);
+            roleToAssign = "Contabilista";
         }
-        else
+
+        var addedToRole = await _userRepository.AddToRoleAsync(user, roleToAssign);
+        if (!addedToRole)
         {
-            await _userManager.AddToRoleAsync(user, "Contabilista"); // Fallback de segurança
+            return new AuthResponseDto
+            {
+                IsSuccess = false,
+                Message = "Utilizador criado, mas não foi possível atribuir a role."
+            };
         }
 
         var token = await _tokenService.GenerateTokenAsync(user);
@@ -93,7 +87,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> LoginAsync(LoginRequestDto model)
     {
-        var user = await _userManager.FindByEmailAsync(model.Email);
+        var user = await _userRepository.GetByEmailAsync(model.Email);
         if (user == null)
         {
             return new AuthResponseDto
@@ -103,8 +97,8 @@ public class AuthService : IAuthService
             };
         }
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: false);
-        if (!result.Succeeded)
+        var isPasswordValid = await _userRepository.CheckPasswordAsync(user, model.Password);
+        if (!isPasswordValid)
         {
             return new AuthResponseDto
             {

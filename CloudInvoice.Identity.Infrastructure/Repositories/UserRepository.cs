@@ -10,28 +10,23 @@ public class UserRepository : IUserRepository
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
-    public UserRepository(ApplicationDbContext context, UserManager<ApplicationUser> userManager    )
+    public UserRepository(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
     {
         _context = context;
         _userManager = userManager;
+        _roleManager = roleManager;
     }
+
     public async Task<ApplicationUser?> GetByIdAsync(string id)
     {
-        // Forçamos o EF a usar o DbSet correto do ApplicationUser
         return await _context.Set<ApplicationUser>().FindAsync(id);
     }
 
     public async Task<ApplicationUser?> GetByEmailAsync(string email)
     {
-        // Usamos também o Set<ApplicationUser>() aqui
         return await _context.Set<ApplicationUser>().FirstOrDefaultAsync(u => u.Email == email);
-    }
-
-    public async Task AddAsync(ApplicationUser user)
-    {
-        await _context.Users.AddAsync(user);
-        await _context.SaveChangesAsync();
     }
 
     public async Task<bool> UpdateUserAsync(ApplicationUser user)
@@ -43,15 +38,51 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> CreateUserAsync(ApplicationUser user, string password)
     {
-        // Usa o UserManager para criar o utilizador e fazer o hash seguro da password
         var result = await _userManager.CreateAsync(user, password);
         return result.Succeeded;
     }
 
     public async Task<bool> CheckPasswordAsync(ApplicationUser user, string password)
     {
-        // Valida se a password inserida bate certo com o hash guardado na base de dados
-        var result = await _userManager.CheckPasswordAsync(user, password);
-        return result;
+        return await _userManager.CheckPasswordAsync(user, password);
+    }
+
+    public async Task<bool> DeleteUserAsync(string id)
+    {
+        var user = await GetByIdAsync(id);
+        if (user == null) return false;
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<List<(ApplicationUser User, string Role)>> GetAllUsersWithRolesAsync()
+    {
+        var users = await _context.Users.ToListAsync();
+        var userRoles = new List<(ApplicationUser, string)>();
+        foreach (var user in users)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            var role = roles.FirstOrDefault() ?? "NoRole";
+            userRoles.Add((user, role));
+        }
+        return userRoles;
+    }
+
+    public async Task<bool> RoleExistsAsync(string role)
+    {
+        return await _roleManager.RoleExistsAsync(role);
+    }
+
+    public async Task<bool> AddToRoleAsync(ApplicationUser user, string role)
+    {
+        var result = await _userManager.AddToRoleAsync(user, role);
+        return result.Succeeded;
+    }
+
+    public async Task<IReadOnlyCollection<string>> GetRolesAsync(ApplicationUser user)
+    {
+        var roles = await _userManager.GetRolesAsync(user);
+        return roles.ToArray();
     }
 }

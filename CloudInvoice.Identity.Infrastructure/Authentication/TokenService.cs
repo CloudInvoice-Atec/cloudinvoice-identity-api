@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
+using CloudInvoice.Identity.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -12,12 +12,12 @@ namespace CloudInvoice.Identity.Infrastructure.Authentication;
 public class TokenService : ITokenService
 {
     private readonly IConfiguration _configuration;
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserRepository _userRepository;
 
-    public TokenService(IConfiguration configuration, UserManager<ApplicationUser> userManager)
+    public TokenService(IConfiguration configuration, IUserRepository userRepository)
     {
         _configuration = configuration;
-        _userManager = userManager;
+        _userRepository = userRepository;
     }
 
     public async Task<string> GenerateTokenAsync(ApplicationUser user)
@@ -26,7 +26,6 @@ public class TokenService : ITokenService
         var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret não configurado.");
         var key = Encoding.ASCII.GetBytes(secretKey);
 
-        // 1. Criar as "claims" (informação que vai guardada dentro do token)
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id),
@@ -34,14 +33,12 @@ public class TokenService : ITokenService
             new(ClaimTypes.Name, user.UserName ?? string.Empty)
         };
 
-        // Adicionar os papéis (Roles) do utilizador ao token
-        var roles = await _userManager.GetRolesAsync(user);
+        var roles = await _userRepository.GetRolesAsync(user);
         foreach (var role in roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
-        // 2. Configurar as credenciais de assinatura
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
@@ -51,7 +48,6 @@ public class TokenService : ITokenService
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
-        // 3. Gerar e serializar o token
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
 

@@ -1,5 +1,5 @@
+using CloudInvoice.Identity.Application.Dtos.Requests;
 using CloudInvoice.Identity.Application.Interfaces;
-using Identity.Application.DTOs.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

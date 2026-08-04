@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CloudInvoice.Identity.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260724193803_InitialCreate")]
+    [Migration("20260804192910_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

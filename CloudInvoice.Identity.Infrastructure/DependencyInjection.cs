@@ -35,7 +35,7 @@ public static class DependencyInjection
         // 3. Registar Repositórios e Serviços de Infraestrutura
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITokenService, TokenService>();
-
+        services.AddScoped<IUserService, UserService>();
         // 4. Registar o Serviço de Autenticação da Application
         services.AddScoped<IAuthService, AuthService>();
 
