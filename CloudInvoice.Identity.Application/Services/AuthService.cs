@@ -97,6 +97,16 @@ public class AuthService : IAuthService
             };
         }
 
+        // NOVO: Verifica se o utilizador está ativo antes de validar a password
+        if (!user.IsActive)
+        {
+            return new AuthResponseDto
+            {
+                IsSuccess = false,
+                Message = "Esta conta encontra-se inativa."
+            };
+        }
+
         var isPasswordValid = await _userRepository.CheckPasswordAsync(user, model.Password);
         if (!isPasswordValid)
         {
@@ -107,6 +117,10 @@ public class AuthService : IAuthService
             };
         }
 
+        // BUSCAR A ROLE REAL DO UTILIZADOR
+        var roles = await _userRepository.GetRolesAsync(user); // Ou o método equivalente que tenhas no teu IUserRepository
+        var userRole = roles.FirstOrDefault() ?? string.Empty;
+
         var token = await _tokenService.GenerateTokenAsync(user);
 
         return new AuthResponseDto
@@ -115,7 +129,9 @@ public class AuthService : IAuthService
             Message = "Login efetuado com sucesso.",
             Token = token,
             Email = user.Email,
-            FullName = $"{user.FirstName} {user.LastName}"
+            FullName = $"{user.FirstName} {user.LastName}",
+            IsActive = user.IsActive,
+            Role = userRole // <-- AGORA JÁ ENVIA A ROLE CORRETAMENTE!
         };
     }
 }

@@ -2,6 +2,7 @@
 using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Domain.Entities;
 using CloudInvoice.Identity.Domain.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace CloudInvoice.Identity.Application.Services
 {
@@ -28,7 +29,8 @@ namespace CloudInvoice.Identity.Application.Services
                     Email = item.User.Email ?? string.Empty,
                     FirstName = item.User.FirstName,
                     LastName = item.User.LastName,
-                    Role = item.Role
+                    Role = GetRoleAsync(item.User.Id).Result, // Obtém o papel do utilizador
+                    IsActive = item.IsActive
                 });
             }
 
@@ -46,7 +48,8 @@ namespace CloudInvoice.Identity.Application.Services
                 Email = user.Email ?? string.Empty,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                // Se precisares da Role, podes obtê-la ou deixá-la vazia aqui
+                Role = GetRoleAsync(user.Id).Result,
+                IsActive = user.IsActive
             };
         }
 
@@ -59,7 +62,9 @@ namespace CloudInvoice.Identity.Application.Services
                 Id = dto.Id,
                 Email = dto.Email,
                 FirstName = dto.FirstName,
-                LastName = dto.LastName
+                LastName = dto.LastName,
+                Role = GetRoleAsync(dto.Id).Result,
+                IsActive = dto.IsActive
             };
             return await _userRepository.CreateUserAsync(user, password);
         }
@@ -73,6 +78,7 @@ namespace CloudInvoice.Identity.Application.Services
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
             user.Email = dto.Email;
+            user.IsActive = dto.IsActive;
             // Podes atualizar outros campos conforme o teu DTO
 
             return await _userRepository.UpdateUserAsync(user);
@@ -92,6 +98,15 @@ namespace CloudInvoice.Identity.Application.Services
             }
 
             return await _userRepository.DeleteUserAsync(id);
+        }
+
+        public async Task<string> GetRoleAsync(string userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return string.Empty;
+
+            var roles = await _userRepository.GetRolesAsync(user);
+            return roles.FirstOrDefault() ?? string.Empty;
         }
 
     }

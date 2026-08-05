@@ -56,15 +56,15 @@ public class UserRepository : IUserRepository
         return true;
     }
 
-    public async Task<List<(ApplicationUser User, string Role)>> GetAllUsersWithRolesAsync()
+    public async Task<List<(ApplicationUser User, string Role, bool IsActive)>> GetAllUsersWithRolesAsync()
     {
         var users = await _context.Users.ToListAsync();
-        var userRoles = new List<(ApplicationUser, string)>();
+        var userRoles = new List<(ApplicationUser, string, bool)>();
         foreach (var user in users)
         {
             var roles = await _userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault() ?? "NoRole";
-            userRoles.Add((user, role));
+            userRoles.Add((user, role, user.IsActive));
         }
         return userRoles;
     }
@@ -84,5 +84,11 @@ public class UserRepository : IUserRepository
     {
         var roles = await _userManager.GetRolesAsync(user);
         return roles.ToArray();
+    }
+
+    public async Task<string> GetRoleForUserAsync(ApplicationUser user)
+    {
+        var roles = await _userManager.GetRolesAsync(user);
+        return roles.FirstOrDefault() ?? string.Empty;
     }
 }

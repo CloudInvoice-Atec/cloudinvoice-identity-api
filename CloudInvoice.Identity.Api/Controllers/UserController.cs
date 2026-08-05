@@ -1,8 +1,9 @@
-﻿using System.Security.Claims;
-using CloudInvoice.Identity.Application.Dtos.Responses;
+﻿using CloudInvoice.Identity.Application.Dtos.Responses;
 using CloudInvoice.Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CloudInvoice.Identity.Api.Controllers
 {
@@ -67,14 +68,23 @@ namespace CloudInvoice.Identity.Api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(string id)
         {
-            var user = await _userService.GetByIdAsync(id); // O método que alinhámos há bocado
+            var user = await _userService.GetByIdAsync(id);
+            if (user == null) return NotFound();
 
-            if (user == null)
+            // ESTA LINHA É OBRIGATÓRIA PARA ABRIR A ROLE DA BASE DE DADOS!
+            var role = await _userService.GetRoleAsync(user.Id);
+
+            var response = new UserResponseDto
             {
-                return NotFound(new { message = "Utilizador não encontrado." });
-            }
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                IsActive = user.IsActive,
+                Role = role // <--- ESTÁS A ATRIBUIR A ROLE AQUI?
+            };
 
-            return Ok(user);
+            return Ok(response);
         }
     }
 }
