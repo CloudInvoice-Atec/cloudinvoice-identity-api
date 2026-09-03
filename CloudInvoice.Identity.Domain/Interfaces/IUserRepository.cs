@@ -6,8 +6,15 @@ namespace CloudInvoice.Identity.Domain.Interfaces
     {
         Task<ApplicationUser?> GetByIdAsync(string id);
         Task<ApplicationUser?> GetByEmailAsync(string email);
-        Task<bool> CreateUserAsync(ApplicationUser user, string password);
+        Task<bool> CreateUserAsync(ApplicationUser user, string role, string requestScheme, string requestHost);
         Task<bool> CheckPasswordAsync(ApplicationUser user, string password);
         Task<bool> UpdateUserAsync(ApplicationUser user);
+        Task<bool> DeleteUserAsync(string id);
+        Task<List<(ApplicationUser User, string Role, bool IsActive)>> GetAllUsersWithRolesAsync();
+        Task<bool> RoleExistsAsync(string role);
+        Task<bool> AddToRoleAsync(ApplicationUser user, string role);
+        Task<IReadOnlyCollection<string>> GetRolesAsync(ApplicationUser user);
+        Task<string> GetRoleForUserAsync(ApplicationUser user);
     }
+
 }

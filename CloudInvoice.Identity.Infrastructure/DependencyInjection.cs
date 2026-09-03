@@ -5,6 +5,7 @@ using CloudInvoice.Identity.Domain.Interfaces;
 using CloudInvoice.Identity.Infrastructure.Authentication;
 using CloudInvoice.Identity.Infrastructure.Data;
 using CloudInvoice.Identity.Infrastructure.Repositories;
+using CloudInvoice.Identity.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,9 +36,11 @@ public static class DependencyInjection
         // 3. Registar Repositórios e Serviços de Infraestrutura
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IUserService, UserService>();
 
         // 4. Registar o Serviço de Autenticação da Application
         services.AddScoped<IAuthService, AuthService>();
+        services.AddTransient<IEmailService, EmailService>();
 
         return services;
     }
