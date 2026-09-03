@@ -1,7 +1,7 @@
-﻿namespace CloudInvoice.Identity.Application.Interfaces;
+﻿namespace CloudInvoice.Identity.Application.Interfaces
 {
     public interface IEmailService
     {
-        Task EnviarEmailAsync(string emailDestino, string assunto, string mensagemFormatoHtml);
+        Task SendEmailAsync(string to, string subject, string body);
     }
 }

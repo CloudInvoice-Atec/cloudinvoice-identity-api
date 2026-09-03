@@ -3,6 +3,8 @@ using CloudInvoice.Identity.Application.Dtos.Responses;
 using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Domain.Entities;
 using CloudInvoice.Identity.Domain.Interfaces;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
 
 namespace CloudInvoice.Identity.Application.Services;
 
@@ -10,16 +12,19 @@ public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly ITokenService _tokenService;
+    private readonly UserManager<ApplicationUser> _userManager; // <-- CORRIGIDO AQUI PARA ApplicationUser
 
-    public AuthService(IUserRepository userRepository, ITokenService tokenService)
+    public AuthService(IUserRepository userRepository, ITokenService tokenService, UserManager<ApplicationUser> _userManager)
     {
         _userRepository = userRepository;
         _tokenService = tokenService;
+        this._userManager = _userManager;
     }
 
-    public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto model)
+    public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto model, string scheme, string host)
     {
         var roleExists = await _userRepository.RoleExistsAsync(model.Role);
+
         if (!roleExists)
         {
             return new AuthResponseDto
@@ -44,10 +49,12 @@ public class AuthService : IAuthService
             UserName = model.Email,
             Email = model.Email,
             FirstName = model.FirstName,
-            LastName = model.LastName
+            LastName = model.LastName,
+            IsActive = true // Garante que o estado ativo não fica a NULL na criação
         };
 
-        var created = await _userRepository.CreateUserAsync(user, model.Password);
+        // O Repositório agora trata da criação, remoção da password, atribuição da role e envio do email.
+        var created = await _userRepository.CreateUserAsync(user, model.Role, scheme, host);
         if (!created)
         {
             return new AuthResponseDto
@@ -57,28 +64,15 @@ public class AuthService : IAuthService
             };
         }
 
-        var roleToAssign = string.Equals(model.Role, "Admin", StringComparison.OrdinalIgnoreCase) ? "Admin" : "Contabilista";
-        if (!await _userRepository.RoleExistsAsync(roleToAssign))
-        {
-            roleToAssign = "Contabilista";
-        }
 
-        var addedToRole = await _userRepository.AddToRoleAsync(user, roleToAssign);
-        if (!addedToRole)
-        {
-            return new AuthResponseDto
-            {
-                IsSuccess = false,
-                Message = "Utilizador criado, mas não foi possível atribuir a role."
-            };
-        }
-
+        // A geração do token de sessão pode manter-se, embora no fluxo atual 
+        // o administrador não vá fazer auto-login com a conta recém-criada.
         var token = await _tokenService.GenerateTokenAsync(user);
 
         return new AuthResponseDto
         {
             IsSuccess = true,
-            Message = "Utilizador registado com sucesso.",
+            Message = "Utilizador registado com sucesso e email de ativação enviado.",
             Token = token,
             Email = user.Email,
             FullName = $"{user.FirstName} {user.LastName}"
@@ -133,5 +127,27 @@ public class AuthService : IAuthService
             IsActive = user.IsActive,
             Role = userRole // <-- AGORA JÁ ENVIA A ROLE CORRETAMENTE!
         };
+    }
+
+    public async Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordDto model)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user == null)
+        {
+            return new AuthResponseDto { IsSuccess = false, Message = "Invalid request." };
+        }
+
+        // Corrige o sinal '+' que o browser por vezes converte em espaço no URL do token
+        var decodedToken = model.Token.Replace(" ", "+");
+
+        var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
+
+        if (result.Succeeded)
+        {
+            return new AuthResponseDto { IsSuccess = true, Message = "Password reset successfully." };
+        }
+
+        var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+        return new AuthResponseDto { IsSuccess = false, Message = errors };
     }
 }

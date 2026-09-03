@@ -6,6 +6,8 @@ namespace CloudInvoice.Identity.Application.Interfaces;
 
 public interface IAuthService
 {
-    Task<AuthResponseDto> RegisterAsync(RegisterRequestDto model);
+    Task<AuthResponseDto> RegisterAsync(RegisterRequestDto model, string scheme, string host);
     Task<AuthResponseDto> LoginAsync(LoginRequestDto model);
+
+    Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordDto model);
 }

@@ -25,7 +25,12 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var result = await _authService.RegisterAsync(model);
+        // Extrai o scheme e o host diretamente do Request da API
+        var scheme = Request.Scheme;
+        var host = Request.Host.Value;
+
+        // Passa-os para o serviço
+        var result = await _authService.RegisterAsync(model, scheme, host);
 
         if (!result.IsSuccess)
         {
@@ -48,6 +53,24 @@ public class AuthController : ControllerBase
         if (!result.IsSuccess)
         {
             return Unauthorized(result);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var result = await _authService.ResetPasswordAsync(model);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result);
         }
 
         return Ok(result);

@@ -54,7 +54,7 @@ namespace CloudInvoice.Identity.Application.Services
         }
 
         // --- CREATE (Criar Utilizador) ---
-        public async Task<bool> CreateUserAsync(UserResponseDto dto, string password)
+        public async Task<bool> CreateUserAsync(UserResponseDto dto, string password, string scheme, string host)
         {
             // Aqui podes colocar regras de negócio antes de criar (ex: validar se o email já existe)
             var user = new ApplicationUser
@@ -66,7 +66,7 @@ namespace CloudInvoice.Identity.Application.Services
                 Role = GetRoleAsync(dto.Id).Result,
                 IsActive = dto.IsActive
             };
-            return await _userRepository.CreateUserAsync(user, password);
+            return await _userRepository.CreateUserAsync(user, dto.Role, scheme, host);
         }
 
         public async Task<bool> UpdateUserAsync(string id, UserResponseDto dto)

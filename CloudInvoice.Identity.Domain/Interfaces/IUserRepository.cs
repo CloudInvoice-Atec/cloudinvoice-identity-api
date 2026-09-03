@@ -6,7 +6,7 @@ namespace CloudInvoice.Identity.Domain.Interfaces
     {
         Task<ApplicationUser?> GetByIdAsync(string id);
         Task<ApplicationUser?> GetByEmailAsync(string email);
-        Task<bool> CreateUserAsync(ApplicationUser user, string password);
+        Task<bool> CreateUserAsync(ApplicationUser user, string role, string requestScheme, string requestHost);
         Task<bool> CheckPasswordAsync(ApplicationUser user, string password);
         Task<bool> UpdateUserAsync(ApplicationUser user);
         Task<bool> DeleteUserAsync(string id);
