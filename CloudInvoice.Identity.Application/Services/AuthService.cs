@@ -51,20 +51,10 @@ public class AuthService : IAuthService
             Email = model.Email,
             FirstName = model.FirstName,
             LastName = model.LastName,
-            IsActive = true // Garante que o estado ativo não fica a NULL na criação
+            IsActive = true
         };
 
-        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user); // ou GeneratePasswordResetTokenAsync
-                                                                                 // Codifica o token se necessário para a query string, e monta o URL:
-        string activationLink = $"{scheme}://{host}/auth/set-password?email={user.Email}&token={WebUtility.UrlEncode(code)}";
-
-        // 3. Constrói o URL absoluto do logótipo
-        string logoUrl = $"{scheme}://{host}/assets/images/logo-horizontal.png";
-
-        // 4. Agora já podes gerar o corpo do e-mail sem erros, porque todas as variáveis existem!
-        string emailBody = EmailTemplates.GetWelcomeEmail(user.FirstName, activationLink, logoUrl);
-
-        // O Repositório agora trata da criação, remoção da password, atribuição da role e envio do email.
+        // O Repositório trata de criar, gerar o token, montar o email e enviá-lo
         var created = await _userRepository.CreateUserAsync(user, model.Role, scheme, host);
         if (!created)
         {
@@ -75,9 +65,6 @@ public class AuthService : IAuthService
             };
         }
 
-
-        // A geração do token de sessão pode manter-se, embora no fluxo atual 
-        // o administrador não vá fazer auto-login com a conta recém-criada.
         var token = await _tokenService.GenerateTokenAsync(user);
 
         return new AuthResponseDto

@@ -42,42 +42,35 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> CreateUserAsync(ApplicationUser user, string role, string requestScheme, string requestHost)
     {
-        // 1. Cria o utilizador com uma password interna gerada apenas para satisfazer o requisito técnico da BD
         var dummyPassword = "Temp_" + Guid.NewGuid().ToString("N") + "!1A";
         var result = await _userManager.CreateAsync(user, dummyPassword);
 
         if (!result.Succeeded)
         {
-            // Se falhar a criação base, devolve logo falso
             return false;
         }
 
-        // 2. Removemos imediatamente essa password interna da base de dados!
         await _userManager.RemovePasswordAsync(user);
 
-        // 3. SEGURANÇA ADICIONAL: Garante que a role existe na BD antes de a atribuir
         if (!await _roleManager.RoleExistsAsync(role))
         {
             await _roleManager.CreateAsync(new IdentityRole(role));
         }
 
-        // 4. Adiciona a role de forma segura
         var roleResult = await _userManager.AddToRoleAsync(user, role);
         if (!roleResult.Succeeded)
         {
-            // Opcional: Se quiseres apagar o utilizador caso a role falhe para não deixar lixo na BD
-            // await _userManager.DeleteAsync(user);
             return false;
         }
 
-        // 5. Gera o token oficial de definição de password (Password Reset Token)
+        // 1. Gera o token oficial de definição de password
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-        // 6. Constrói o link limpo para o frontend onde ele vai criar a password
+        // 2. Constrói o link apontando para a porta correta do frontend (7085)
         var linkParaEmail = $"https://localhost:7085/auth/set-password?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}";
 
-        // 7 e 8. Força o caminho completo correto apontando para a porta 7085 do Frontend onde a imagem existe
-        string logoUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+        // 3. Define o URL absoluto do logótipo (podes usar a porta do request ou fixar o frontend)
+        string logoUrl = $"{requestScheme}://{requestHost}/assets/images/logo-horizontal.png";
 
         string mensagemHtml = EmailTemplates.GetWelcomeEmail(
             nome: user.FirstName,
@@ -87,7 +80,6 @@ public class UserRepository : IUserRepository
 
         string assunto = "Bem-vindo ao CloudInvoice!";
 
-        // 9. Envia o email
         try
         {
             await _emailService.SendEmailAsync(user.Email!, assunto, mensagemHtml);

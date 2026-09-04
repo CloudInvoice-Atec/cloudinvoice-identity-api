@@ -4,10 +4,6 @@ public static class EmailTemplates
 {
     public static string GetWelcomeEmail(string nome, string linkParaEmail, string logoUrl)
     {
-        // Usamos uma imagem em Base64 integrada para garantir que aparece sempre em qualquer cliente de email (Outlook, Gmail, etc.)
-        // sem depender de links locais ou erros de HTTPS/portas.
-        string logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="; // <-- Substitui esta string base64 pela string real do teu logo se preferires, ou usa a tag abaixo
-
         return $@"
 <!DOCTYPE html>
 <html>
@@ -34,15 +30,26 @@ public static class EmailTemplates
 
         .header {{
             background-color: #ffffff;
-            padding: 30px 40px;
+            padding: 35px 40px 20px 40px;
             text-align: center;
             border-bottom: 1px solid #f1f3f5;
         }}
 
-        .header img {{
-            max-height: 50px;
-            width: auto;
-            display: inline-block;
+        .brand-title {{
+            font-size: 26px;
+            font-weight: 800;
+            color: #727cf5;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+            margin: 0;
+        }}
+
+        .brand-subtitle {{
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }}
 
         .content {{
@@ -92,8 +99,8 @@ public static class EmailTemplates
 <body>
     <div class='email-container'>
         <div class='header'>
-            <!-- Se preferires usar a variável logoUrl original ou o base64 direto: -->
-            <img src='{logoUrl}' alt='CloudInvoice' />
+            <h1 class='brand-title'>CloudInvoice</h1>
+            <div class='brand-subtitle'>Gestão Financeira Inteligente e Segura</div>
         </div>
 
         <div class='content'>
@@ -112,7 +119,7 @@ public static class EmailTemplates
         </div>
 
         <div class='footer'>
-            <p>&copy; {DateTime.Now.Year} CloudInvoice - Gestão Financeira Inteligente e Segura.<br>Este é um email automático, por favor não responda.</p>
+            <p>&copy; {DateTime.Now.Year} CloudInvoice. Todos os direitos reservados.<br>Este é um email automático, por favor não responda.</p>
         </div>
     </div>
 </body>
