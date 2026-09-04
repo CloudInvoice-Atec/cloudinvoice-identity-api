@@ -1,3 +1,4 @@
+using CloudInvoice.Identity.Application.Dtos.Requests;
 using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Api.Middlewares.Exceptions;
 using Identity.Application.DTOs.Requests;
@@ -26,7 +27,12 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var result = await _authService.RegisterAsync(model);
+        // Extrai o scheme e o host diretamente do Request da API
+        var scheme = Request.Scheme;
+        var host = Request.Host.Value;
+
+        // Passa-os para o serviço
+        var result = await _authService.RegisterAsync(model, scheme, host);
 
         if (!result.IsSuccess)
         {
@@ -57,6 +63,47 @@ public class AuthController : ControllerBase
         if (!result.IsSuccess)
         {
             throw new UnauthorizedException(result.Message);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        var result = await _authService.LogoutAsync();
+        return Ok(result);
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var scheme = Request.Scheme;
+        var host = Request.Host.Value;
+        var result = await _authService.ForgotPasswordAsync(model, scheme, host);
+
+        return Ok(result);
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var result = await _authService.ResetPasswordAsync(model);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result);
         }
 
         return Ok(result);
