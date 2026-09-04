@@ -23,21 +23,14 @@ namespace CloudInvoice.Identity.Api.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CheckHealth()
         {
-            try
-            {
-                var canConnect = await _healthCheckService.CanConnectAsync();
+            var canConnect = await _healthCheckService.CanConnectAsync();
 
-                if (canConnect)
-                {
-                    return Ok(new { status = "Healthy", message = "API e Base de Dados a funcionar em pleno!" });
-                }
-
-                return StatusCode(StatusCodes.Status500InternalServerError, new { status = "Unhealthy", message = "Base de dados inacessível." });
-            }
-            catch (Exception ex)
+            if (canConnect)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { status = "Unhealthy", error = ex.Message });
+                return Ok(new { status = "Healthy", message = "API e Base de Dados a funcionar em pleno!" });
             }
+
+            return StatusCode(StatusCodes.Status500InternalServerError, new { status = "Unhealthy", message = "Base de dados inacessível." });
         }
     }
 }
