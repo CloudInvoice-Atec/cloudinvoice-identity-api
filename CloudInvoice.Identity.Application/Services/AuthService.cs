@@ -3,8 +3,9 @@ using CloudInvoice.Identity.Application.Dtos.Responses;
 using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Domain.Entities;
 using CloudInvoice.Identity.Domain.Interfaces;
-using MediatR;
+using CloudInvoice.Identity.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
+using System.Net;
 
 namespace CloudInvoice.Identity.Application.Services;
 
@@ -12,13 +13,13 @@ public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly ITokenService _tokenService;
-    private readonly UserManager<ApplicationUser> _userManager; // <-- CORRIGIDO AQUI PARA ApplicationUser
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public AuthService(IUserRepository userRepository, ITokenService tokenService, UserManager<ApplicationUser> _userManager)
+    public AuthService(IUserRepository userRepository, ITokenService tokenService, UserManager<ApplicationUser> userManager)
     {
         _userRepository = userRepository;
         _tokenService = tokenService;
-        this._userManager = _userManager;
+        _userManager = userManager;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto model, string scheme, string host)
@@ -52,6 +53,16 @@ public class AuthService : IAuthService
             LastName = model.LastName,
             IsActive = true // Garante que o estado ativo não fica a NULL na criação
         };
+
+        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user); // ou GeneratePasswordResetTokenAsync
+                                                                                 // Codifica o token se necessário para a query string, e monta o URL:
+        string activationLink = $"{scheme}://{host}/auth/set-password?email={user.Email}&token={WebUtility.UrlEncode(code)}";
+
+        // 3. Constrói o URL absoluto do logótipo
+        string logoUrl = $"{scheme}://{host}/assets/images/logo-horizontal.png";
+
+        // 4. Agora já podes gerar o corpo do e-mail sem erros, porque todas as variáveis existem!
+        string emailBody = EmailTemplates.GetWelcomeEmail(user.FirstName, activationLink, logoUrl);
 
         // O Repositório agora trata da criação, remoção da password, atribuição da role e envio do email.
         var created = await _userRepository.CreateUserAsync(user, model.Role, scheme, host);
@@ -112,7 +123,7 @@ public class AuthService : IAuthService
         }
 
         // BUSCAR A ROLE REAL DO UTILIZADOR
-        var roles = await _userRepository.GetRolesAsync(user); // Ou o método equivalente que tenhas no teu IUserRepository
+        var roles = await _userRepository.GetRolesAsync(user);
         var userRole = roles.FirstOrDefault() ?? string.Empty;
 
         var token = await _tokenService.GenerateTokenAsync(user);
@@ -125,8 +136,17 @@ public class AuthService : IAuthService
             Email = user.Email,
             FullName = $"{user.FirstName} {user.LastName}",
             IsActive = user.IsActive,
-            Role = userRole // <-- AGORA JÁ ENVIA A ROLE CORRETAMENTE!
+            Role = userRole
         };
+    }
+
+    public Task<AuthResponseDto> LogoutAsync()
+    {
+        return Task.FromResult(new AuthResponseDto
+        {
+            IsSuccess = true,
+            Message = "Logout efetuado com sucesso."
+        });
     }
 
     public async Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordDto model)

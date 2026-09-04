@@ -2,6 +2,7 @@ using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Domain.Entities;
 using CloudInvoice.Identity.Domain.Interfaces;
 using CloudInvoice.Identity.Infrastructure.Data;
+using CloudInvoice.Identity.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -75,28 +76,16 @@ public class UserRepository : IUserRepository
         // 6. Constrói o link limpo para o frontend onde ele vai criar a password
         var linkParaEmail = $"https://localhost:7085/auth/set-password?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}";
 
-        // 7. Lê o template HTML do email
-        string logoUrl = $"{requestScheme}://{requestHost}/images/logo.png";
-        string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Templates", "WelcomeEmail.html");
+        // 7 e 8. Força o caminho completo correto apontando para a porta 7085 do Frontend onde a imagem existe
+        string logoUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
-        string emailTemplate = string.Empty;
-        if (File.Exists(templatePath))
-        {
-            emailTemplate = await File.ReadAllTextAsync(templatePath);
-        }
-        else
-        {
-            emailTemplate = "<h2>Bem-vindo ao CloudInvoice</h2><p>Clique no link para criar a sua password: <a href='{{LINK}}'>Criar Password</a></p>";
-        }
+        string mensagemHtml = EmailTemplates.GetWelcomeEmail(
+            nome: user.FirstName,
+            linkParaEmail: linkParaEmail,
+            logoUrl: logoUrl
+        );
 
-        // 8. Substitui as tags no HTML
-        string mensagemHtml = emailTemplate
-            .Replace("{{NOME}}", user.FirstName)
-            .Replace("{{LOGO_URL}}", logoUrl)
-            .Replace("{{LINK}}", linkParaEmail)
-            .Replace("{{ANO}}", DateTime.Now.Year.ToString());
-
-        string assunto = "Bem-vindo ao CloudInvoice! Defina a sua palavra-passe.";
+        string assunto = "Bem-vindo ao CloudInvoice!";
 
         // 9. Envia o email
         try

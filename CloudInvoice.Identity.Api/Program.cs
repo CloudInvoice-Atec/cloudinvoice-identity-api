@@ -72,6 +72,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IHealthCheckService, HealthCheckService>();
 
 var app = builder.Build();
+app.UseStaticFiles();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
@@ -92,8 +93,7 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger();    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
