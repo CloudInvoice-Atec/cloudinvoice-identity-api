@@ -5,7 +5,6 @@ using CloudInvoice.Identity.Domain.Entities;
 using CloudInvoice.Identity.Domain.Interfaces;
 using CloudInvoice.Identity.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
-using System.Net;
 
 namespace CloudInvoice.Identity.Application.Services;
 
@@ -14,12 +13,14 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly ITokenService _tokenService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IEmailService _emailService;
 
-    public AuthService(IUserRepository userRepository, ITokenService tokenService, UserManager<ApplicationUser> userManager)
+    public AuthService(IUserRepository userRepository, ITokenService tokenService, UserManager<ApplicationUser> userManager, IEmailService emailService)
     {
         _userRepository = userRepository;
         _tokenService = tokenService;
         _userManager = userManager;
+        _emailService = emailService;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto model, string scheme, string host)
@@ -134,6 +135,37 @@ public class AuthService : IAuthService
             IsSuccess = true,
             Message = "Logout efetuado com sucesso."
         });
+    }
+
+    public async Task<AuthResponseDto> ForgotPasswordAsync(ForgotPasswordDto model, string scheme, string host)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user == null || !user.IsActive)
+        {
+            return new AuthResponseDto
+            {
+                IsSuccess = true,
+                Message = "Se o e-mail existir, será enviado um link para redefinir a palavra-passe."
+            };
+        }
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        // Extrai apenas o nome do domínio/IP (removendo a porta da API se vier no 'host', ex: localhost:5001 -> localhost)
+        var serverHost = host.Contains(':') ? host.Substring(0, host.IndexOf(':')) : host;
+
+        // Constrói o link apontando explicitamente para a porta 7085 do Frontend Blazor
+        var resetLink = $"{scheme}://{serverHost}:7085/account/reset-password?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}";
+
+        var mensagemHtml = EmailTemplates.GetPasswordResetEmail(user.FirstName, resetLink);
+
+        await _emailService.SendEmailAsync(user.Email!, "Recuperação de Palavra-passe - CloudInvoice", mensagemHtml);
+
+        return new AuthResponseDto
+        {
+            IsSuccess = true,
+            Message = "Se o e-mail existir, será enviado um link para redefinir a palavra-passe."
+        };
     }
 
     public async Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordDto model)

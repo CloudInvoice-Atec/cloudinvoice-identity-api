@@ -66,6 +66,21 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var scheme = Request.Scheme;
+        var host = Request.Host.Value;
+        var result = await _authService.ForgotPasswordAsync(model, scheme, host);
+
+        return Ok(result);
+    }
+
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
     {
