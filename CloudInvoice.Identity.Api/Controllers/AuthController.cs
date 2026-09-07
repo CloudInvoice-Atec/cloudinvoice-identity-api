@@ -40,7 +40,15 @@ public class AuthController : ControllerBase
 
         if (!result.IsSuccess)
         {
-            return BadRequest(result);
+            // Mapear erros de negócio para exceptions
+            if (result.Message.Contains("role"))
+                throw new NotFoundException(result.Message);
+            if (result.Message.Contains("já existe"))
+                throw new ConflictException(result.Message);
+            if (result.Message.Contains("Erro no registo"))
+                throw new ValidationException(result.Message);
+
+            throw new AppException(result.Message, 400);
         }
 
         return Ok(result);
@@ -58,7 +66,7 @@ public class AuthController : ControllerBase
 
         if (!result.IsSuccess)
         {
-            return Unauthorized(result);
+            throw new UnauthorizedException(result.Message);
         }
 
         return Ok(result);
