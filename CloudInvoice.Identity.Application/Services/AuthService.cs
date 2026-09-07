@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using CloudInvoice.Identity.Application.Dtos.Requests;
 using CloudInvoice.Identity.Application.Dtos.Responses;
 using CloudInvoice.Identity.Application.Interfaces;
@@ -90,7 +91,6 @@ public class AuthService : IAuthService
             };
         }
 
-        // NOVO: Verifica se o utilizador está ativo antes de validar a password
         if (!user.IsActive)
         {
             return new AuthResponseDto
@@ -110,7 +110,6 @@ public class AuthService : IAuthService
             };
         }
 
-        // BUSCAR A ROLE REAL DO UTILIZADOR
         var roles = await _userRepository.GetRolesAsync(user);
         var userRole = roles.FirstOrDefault() ?? string.Empty;
 
@@ -123,6 +122,136 @@ public class AuthService : IAuthService
             Token = token,
             Email = user.Email,
             FullName = $"{user.FirstName} {user.LastName}",
+            IsActive = user.IsActive,
+            Role = userRole
+        };
+    }
+
+    public async Task<AuthResponseDto> ExternalLoginAsync(string provider, ClaimsPrincipal principal)
+    {
+        if (string.IsNullOrWhiteSpace(provider))
+        {
+            return new AuthResponseDto
+            {
+                IsSuccess = false,
+                Message = "Provider OAuth inválido."
+            };
+        }
+
+        var providerKey = principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? principal.FindFirstValue("sub");
+        if (string.IsNullOrWhiteSpace(providerKey))
+        {
+            return new AuthResponseDto
+            {
+                IsSuccess = false,
+                Message = "Não foi possível obter a identificação externa do utilizador."
+            };
+        }
+
+        var email = principal.FindFirstValue(ClaimTypes.Email)
+            ?? principal.FindFirstValue("email")
+            ?? principal.FindFirstValue("preferred_username");
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return new AuthResponseDto
+            {
+                IsSuccess = false,
+                Message = "Não foi possível obter o email do utilizador externo."
+            };
+        }
+
+        var firstName = principal.FindFirstValue(ClaimTypes.GivenName) ?? principal.FindFirstValue("given_name") ?? string.Empty;
+        var lastName = principal.FindFirstValue(ClaimTypes.Surname) ?? principal.FindFirstValue("family_name") ?? string.Empty;
+
+        var user = await _userManager.FindByLoginAsync(provider, providerKey);
+        user ??= await _userManager.FindByEmailAsync(email);
+
+        if (user == null)
+        {
+            user = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                FirstName = firstName,
+                LastName = lastName,
+                IsActive = true
+            };
+
+            var createResult = await _userManager.CreateAsync(user);
+            if (!createResult.Succeeded)
+            {
+                var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
+                return new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = errors
+                };
+            }
+        }
+
+        if (!user.IsActive)
+        {
+            return new AuthResponseDto
+            {
+                IsSuccess = false,
+                Message = "Esta conta encontra-se inativa."
+            };
+        }
+
+        var logins = await _userManager.GetLoginsAsync(user);
+        if (!logins.Any(login => login.LoginProvider == provider && login.ProviderKey == providerKey))
+        {
+            var addLoginResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, providerKey, provider));
+            if (!addLoginResult.Succeeded)
+            {
+                var errors = string.Join("; ", addLoginResult.Errors.Select(e => e.Description));
+                return new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = errors
+                };
+            }
+        }
+
+        var roles = await _userRepository.GetRolesAsync(user);
+        if (!roles.Any())
+        {
+            const string defaultRole = "Contabilista";
+            if (!await _userRepository.RoleExistsAsync(defaultRole))
+            {
+                return new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "A role padrão para utilizadores externos não existe no sistema."
+                };
+            }
+
+            var addRoleResult = await _userManager.AddToRoleAsync(user, defaultRole);
+            if (!addRoleResult.Succeeded)
+            {
+                var errors = string.Join("; ", addRoleResult.Errors.Select(e => e.Description));
+                return new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = errors
+                };
+            }
+
+            roles = await _userRepository.GetRolesAsync(user);
+        }
+
+        var token = await _tokenService.GenerateTokenAsync(user);
+        var userRole = roles.FirstOrDefault() ?? string.Empty;
+        var fullName = $"{user.FirstName} {user.LastName}".Trim();
+
+        return new AuthResponseDto
+        {
+            IsSuccess = true,
+            Message = "Login externo efetuado com sucesso.",
+            Token = token,
+            Email = user.Email,
+            FullName = fullName,
             IsActive = user.IsActive,
             Role = userRole
         };

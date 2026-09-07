@@ -1,9 +1,14 @@
 using CloudInvoice.Identity.Application.Dtos.Requests;
+using CloudInvoice.Identity.Application.Dtos.Responses;
 using CloudInvoice.Identity.Application.Interfaces;
-using CloudInvoice.Identity.Api.Middlewares.Exceptions;
-using Identity.Application.DTOs.Requests;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 
 namespace CloudInvoice.Identity.Api.Controllers;
 
@@ -12,10 +17,12 @@ namespace CloudInvoice.Identity.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IConfiguration _configuration;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IConfiguration configuration)
     {
         _authService = authService;
+        _configuration = configuration;
     }
 
     [HttpPost("register")]
@@ -27,11 +34,8 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        // Extrai o scheme e o host diretamente do Request da API
         var scheme = Request.Scheme;
         var host = Request.Host.Value;
-
-        // Passa-os para o serviço
         var result = await _authService.RegisterAsync(model, scheme, host);
 
         if (!result.IsSuccess)
@@ -66,6 +70,94 @@ public class AuthController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    [HttpGet("external-login")]
+    [HttpGet("external-login/{provider}")]
+    [AllowAnonymous]
+    public IActionResult ExternalLogin([FromRoute] string? provider = null, [FromQuery(Name = "provider")] string? providerQuery = null, [FromQuery] string? returnUrl = null)
+    {
+        provider ??= providerQuery;
+
+        var authenticationScheme = GetExternalProviderScheme(provider);
+        if (authenticationScheme is null)
+        {
+            return BadRequest(new AuthResponseDto
+            {
+                IsSuccess = false,
+                Message = "Provider OAuth inválido."
+            });
+        }
+
+        returnUrl ??= _configuration["Frontend:AuthCallbackUrl"];
+
+        var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/auth/external-login/{authenticationScheme}/callback";
+        if (!string.IsNullOrWhiteSpace(returnUrl))
+        {
+            callbackUrl = QueryHelpers.AddQueryString(callbackUrl, "returnUrl", returnUrl);
+        }
+
+        var properties = new AuthenticationProperties
+        {
+            RedirectUri = callbackUrl
+        };
+
+        return Challenge(properties, authenticationScheme);
+    }
+
+    [HttpGet("external-login/{provider}/callback")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ExternalLoginCallback(string provider, [FromQuery] string? returnUrl = null)
+    {
+        var authenticateResult = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+        try
+        {
+            if (!authenticateResult.Succeeded || authenticateResult.Principal is null)
+            {
+                return Unauthorized(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Falha ao validar o login externo."
+                });
+            }
+
+            var authenticationScheme = GetExternalProviderScheme(provider);
+            if (authenticationScheme is null)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Provider OAuth inválido."
+                });
+            }
+
+            var result = await _authService.ExternalLoginAsync(authenticationScheme, authenticateResult.Principal);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+
+            returnUrl ??= _configuration["Frontend:AuthCallbackUrl"];
+
+            if (!string.IsNullOrWhiteSpace(returnUrl))
+            {
+                var redirectUrl = QueryHelpers.AddQueryString(returnUrl, new Dictionary<string, string?>
+                {
+                    ["token"] = result.Token,
+                    ["email"] = result.Email,
+                    ["fullName"] = result.FullName,
+                    ["role"] = result.Role
+                });
+
+                return Redirect(redirectUrl);
+            }
+
+            return Ok(result);
+        }
+        finally
+        {
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        }
     }
 
     [HttpPost("logout")]
@@ -107,5 +199,15 @@ public class AuthController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    private static string? GetExternalProviderScheme(string? provider)
+    {
+        return provider?.ToLowerInvariant() switch
+        {
+            "google" => GoogleDefaults.AuthenticationScheme,
+            "microsoft" => MicrosoftAccountDefaults.AuthenticationScheme,
+            _ => null
+        };
     }
 }

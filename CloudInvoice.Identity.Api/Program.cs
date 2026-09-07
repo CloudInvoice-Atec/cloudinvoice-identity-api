@@ -2,7 +2,10 @@ using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Infrastructure;
 using CloudInvoice.Identity.Infrastructure.Data;
 using CloudInvoice.Identity.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -12,12 +15,10 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Adicionar controladores
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "CloudInvoice.Identity.Api", Version = "v1" });
 
-    // Configuração para o botão "Authorize" aparecer no Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Exemplo: \"Bearer {token}\"",
@@ -43,10 +44,10 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// 2. Chamar o método de extensão da Infraestrutura (passando o configuration)
+// 2. Chamar o método de extensão da Infraestrutura
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// 3. Configurar a Autenticação JWT no pipeline da API
+// 3. Configurar a Autenticação (JWT + Google + Microsoft)
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret não configurado.");
 
@@ -67,13 +68,27 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey))
     };
+})
+.AddGoogle(googleOptions =>
+{
+    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
+    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+    googleOptions.SignInScheme = IdentityConstants.ExternalScheme;
+    googleOptions.CallbackPath = "/api/auth/external-login/google/signin";
+})
+.AddMicrosoftAccount(microsoftOptions =>
+{
+    microsoftOptions.ClientId = builder.Configuration["Authentication:Microsoft:ClientId"]!;
+    microsoftOptions.ClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"]!;
+    microsoftOptions.SignInScheme = IdentityConstants.ExternalScheme;
+    microsoftOptions.CallbackPath = "/api/auth/external-login/microsoft/signin";
 });
 
 builder.Services.AddScoped<IHealthCheckService, HealthCheckService>();
 
 var app = builder.Build();
-app.UseStaticFiles();
 
+app.UseStaticFiles();
 app.UseMiddleware<ExceptionMiddleware>();
 
 // 5. Executar o Seeder de Roles ao iniciar a aplicação
@@ -93,7 +108,8 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();    app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

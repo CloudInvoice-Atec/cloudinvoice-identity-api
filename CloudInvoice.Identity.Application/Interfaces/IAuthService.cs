@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using CloudInvoice.Identity.Application.Dtos;
 using CloudInvoice.Identity.Application.Dtos.Requests;
 using CloudInvoice.Identity.Application.Dtos.Responses;
@@ -11,4 +12,5 @@ public interface IAuthService
     Task<AuthResponseDto> LogoutAsync();
     Task<AuthResponseDto> ForgotPasswordAsync(ForgotPasswordDto model, string scheme, string host);
     Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordDto model);
+    Task<AuthResponseDto> ExternalLoginAsync(string provider, ClaimsPrincipal principal);
 }
