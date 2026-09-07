@@ -1,7 +1,6 @@
 ﻿using CloudInvoice.Identity.Application.Dtos.Responses;
 using CloudInvoice.Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -71,20 +70,7 @@ namespace CloudInvoice.Identity.Api.Controllers
             var user = await _userService.GetByIdAsync(id);
             if (user == null) return NotFound();
 
-            // ESTA LINHA É OBRIGATÓRIA PARA ABRIR A ROLE DA BASE DE DADOS!
-            var role = await _userService.GetRoleAsync(user.Id);
-
-            var response = new UserResponseDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                IsActive = user.IsActive,
-                Role = role // <--- ESTÁS A ATRIBUIR A ROLE AQUI?
-            };
-
-            return Ok(response);
+            return Ok(user);
         }
     }
 }

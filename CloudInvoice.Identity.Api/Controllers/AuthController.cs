@@ -1,3 +1,4 @@
+using CloudInvoice.Identity.Api.Middlewares.Exceptions;
 using CloudInvoice.Identity.Application.Dtos.Requests;
 using CloudInvoice.Identity.Application.Dtos.Responses;
 using CloudInvoice.Identity.Application.Interfaces;
@@ -8,7 +9,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Configuration;
 
 namespace CloudInvoice.Identity.Api.Controllers;
 
