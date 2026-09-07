@@ -1,8 +1,6 @@
-using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Domain.Entities;
 using CloudInvoice.Identity.Domain.Interfaces;
 using CloudInvoice.Identity.Infrastructure.Data;
-using CloudInvoice.Identity.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,14 +11,11 @@ public class UserRepository : IUserRepository
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly IEmailService _emailService;
-
-    public UserRepository(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IEmailService emailService)
+    public UserRepository(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
     {
         _context = context;
         _userManager = userManager;
         _roleManager = roleManager;
-        _emailService = emailService;
     }
 
     public async Task<ApplicationUser?> GetByIdAsync(string id)
@@ -33,6 +28,11 @@ public class UserRepository : IUserRepository
         return await _context.Set<ApplicationUser>().FirstOrDefaultAsync(u => u.Email == email);
     }
 
+    public async Task<ApplicationUser?> FindByLoginAsync(string provider, string providerKey)
+    {
+        return await _userManager.FindByLoginAsync(provider, providerKey);
+    }
+
     public async Task<bool> UpdateUserAsync(ApplicationUser user)
     {
         _context.Users.Update(user);
@@ -40,7 +40,7 @@ public class UserRepository : IUserRepository
         return true;
     }
 
-    public async Task<bool> CreateUserAsync(ApplicationUser user, string role, string requestScheme, string requestHost)
+    public async Task<bool> CreateUserAsync(ApplicationUser user, string role)
     {
         var dummyPassword = "Temp_" + Guid.NewGuid().ToString("N") + "!1A";
         var result = await _userManager.CreateAsync(user, dummyPassword);
@@ -58,38 +58,7 @@ public class UserRepository : IUserRepository
         }
 
         var roleResult = await _userManager.AddToRoleAsync(user, role);
-        if (!roleResult.Succeeded)
-        {
-            return false;
-        }
-
-        // 1. Gera o token oficial de definição de password
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-        // 2. Constrói o link apontando para a porta correta do frontend (7085)
-        var linkParaEmail = $"https://localhost:7085/auth/set-password?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}";
-
-        // 3. Define o URL absoluto do logótipo (podes usar a porta do request ou fixar o frontend)
-        string logoUrl = $"{requestScheme}://{requestHost}/assets/images/logo-horizontal.png";
-
-        string mensagemHtml = EmailTemplates.GetWelcomeEmail(
-            nome: user.FirstName,
-            linkParaEmail: linkParaEmail,
-            logoUrl: logoUrl
-        );
-
-        string assunto = "Bem-vindo ao CloudInvoice!";
-
-        try
-        {
-            await _emailService.SendEmailAsync(user.Email!, assunto, mensagemHtml);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[AVISO] Erro ao enviar email: {ex.Message}");
-        }
-
-        return true;
+        return roleResult.Succeeded;
     }
 
     public async Task<bool> CheckPasswordAsync(ApplicationUser user, string password)
@@ -127,6 +96,29 @@ public class UserRepository : IUserRepository
     public async Task<bool> AddToRoleAsync(ApplicationUser user, string role)
     {
         var result = await _userManager.AddToRoleAsync(user, role);
+        return result.Succeeded;
+    }
+
+    public async Task<bool> AddLoginAsync(ApplicationUser user, string provider, string providerKey)
+    {
+        var result = await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, providerKey, provider));
+        return result.Succeeded;
+    }
+
+    public async Task<bool> HasLoginAsync(ApplicationUser user, string provider, string providerKey)
+    {
+        var logins = await _userManager.GetLoginsAsync(user);
+        return logins.Any(login => login.LoginProvider == provider && login.ProviderKey == providerKey);
+    }
+
+    public async Task<string> GeneratePasswordResetTokenAsync(ApplicationUser user)
+    {
+        return await _userManager.GeneratePasswordResetTokenAsync(user);
+    }
+
+    public async Task<bool> ResetPasswordAsync(ApplicationUser user, string token, string newPassword)
+    {
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
         return result.Succeeded;
     }
 

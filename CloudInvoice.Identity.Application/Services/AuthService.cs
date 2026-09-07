@@ -1,11 +1,12 @@
 using System.Security.Claims;
+using AutoMapper;
 using CloudInvoice.Identity.Application.Dtos.Requests;
 using CloudInvoice.Identity.Application.Dtos.Responses;
+using CloudInvoice.Identity.Application.Email;
 using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Domain.Entities;
 using CloudInvoice.Identity.Domain.Interfaces;
-using CloudInvoice.Identity.Infrastructure.Services;
-using Microsoft.AspNetCore.Identity;
+
 
 namespace CloudInvoice.Identity.Application.Services;
 
@@ -13,15 +14,15 @@ public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly ITokenService _tokenService;
-    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IEmailService _emailService;
+    private readonly IMapper _mapper;
 
-    public AuthService(IUserRepository userRepository, ITokenService tokenService, UserManager<ApplicationUser> userManager, IEmailService emailService)
+    public AuthService(IUserRepository userRepository, ITokenService tokenService, IEmailService emailService, IMapper mapper)
     {
         _userRepository = userRepository;
         _tokenService = tokenService;
-        _userManager = userManager;
         _emailService = emailService;
+        _mapper = mapper;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto model, string scheme, string host)
@@ -47,17 +48,11 @@ public class AuthService : IAuthService
             };
         }
 
-        var user = new ApplicationUser
-        {
-            UserName = model.Email,
-            Email = model.Email,
-            FirstName = model.FirstName,
-            LastName = model.LastName,
-            IsActive = true
-        };
+        var user = _mapper.Map<ApplicationUser>(model);
+        user.IsActive = true;
 
         // O Repositório trata de criar, gerar o token, montar o email e enviá-lo
-        var created = await _userRepository.CreateUserAsync(user, model.Role, scheme, host);
+        var created = await _userRepository.CreateUserAsync(user, model.Role);
         if (!created)
         {
             return new AuthResponseDto
@@ -68,15 +63,18 @@ public class AuthService : IAuthService
         }
 
         var token = await _tokenService.GenerateTokenAsync(user);
+        var activationToken = await _userRepository.GeneratePasswordResetTokenAsync(user);
+        var serverHost = host.Contains(':') ? host.Substring(0, host.IndexOf(':')) : host;
+        var resetLink = $"{scheme}://{serverHost}:7085/auth/set-password?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(activationToken)}";
+        var mensagemHtml = EmailTemplates.GetWelcomeEmail(user.FirstName, resetLink);
+        await _emailService.SendEmailAsync(user.Email!, "Bem-vindo ao CloudInvoice!", mensagemHtml);
 
-        return new AuthResponseDto
-        {
-            IsSuccess = true,
-            Message = "Utilizador registado com sucesso e email de ativação enviado.",
-            Token = token,
-            Email = user.Email,
-            FullName = $"{user.FirstName} {user.LastName}"
-        };
+        var response = _mapper.Map<AuthResponseDto>(user);
+        response.IsSuccess = true;
+        response.Message = "Utilizador registado com sucesso e email de ativação enviado.";
+        response.Token = token;
+
+        return response;
     }
 
     public async Task<AuthResponseDto> LoginAsync(LoginRequestDto model)
@@ -114,17 +112,13 @@ public class AuthService : IAuthService
         var userRole = roles.FirstOrDefault() ?? string.Empty;
 
         var token = await _tokenService.GenerateTokenAsync(user);
+        var response = _mapper.Map<AuthResponseDto>(user);
+        response.IsSuccess = true;
+        response.Message = "Login efetuado com sucesso.";
+        response.Token = token;
+        response.Role = userRole;
 
-        return new AuthResponseDto
-        {
-            IsSuccess = true,
-            Message = "Login efetuado com sucesso.",
-            Token = token,
-            Email = user.Email,
-            FullName = $"{user.FirstName} {user.LastName}",
-            IsActive = user.IsActive,
-            Role = userRole
-        };
+        return response;
     }
 
     public async Task<AuthResponseDto> ExternalLoginAsync(string provider, ClaimsPrincipal principal)
@@ -164,8 +158,18 @@ public class AuthService : IAuthService
         var firstName = principal.FindFirstValue(ClaimTypes.GivenName) ?? principal.FindFirstValue("given_name") ?? string.Empty;
         var lastName = principal.FindFirstValue(ClaimTypes.Surname) ?? principal.FindFirstValue("family_name") ?? string.Empty;
 
-        var user = await _userManager.FindByLoginAsync(provider, providerKey);
-        user ??= await _userManager.FindByEmailAsync(email);
+        const string defaultRole = "Contabilista";
+        if (!await _userRepository.RoleExistsAsync(defaultRole))
+        {
+            return new AuthResponseDto
+            {
+                IsSuccess = false,
+                Message = "A role padrão para utilizadores externos não existe no sistema."
+            };
+        }
+
+        var user = await _userRepository.FindByLoginAsync(provider, providerKey);
+        user ??= await _userRepository.GetByEmailAsync(email);
 
         if (user == null)
         {
@@ -178,14 +182,13 @@ public class AuthService : IAuthService
                 IsActive = true
             };
 
-            var createResult = await _userManager.CreateAsync(user);
-            if (!createResult.Succeeded)
+            var created = await _userRepository.CreateUserAsync(user, defaultRole);
+            if (!created)
             {
-                var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
                 return new AuthResponseDto
                 {
                     IsSuccess = false,
-                    Message = errors
+                    Message = "Não foi possível criar o utilizador externo."
                 };
             }
         }
@@ -199,17 +202,14 @@ public class AuthService : IAuthService
             };
         }
 
-        var logins = await _userManager.GetLoginsAsync(user);
-        if (!logins.Any(login => login.LoginProvider == provider && login.ProviderKey == providerKey))
+        if (!await _userRepository.HasLoginAsync(user, provider, providerKey))
         {
-            var addLoginResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, providerKey, provider));
-            if (!addLoginResult.Succeeded)
+            if (!await _userRepository.AddLoginAsync(user, provider, providerKey))
             {
-                var errors = string.Join("; ", addLoginResult.Errors.Select(e => e.Description));
                 return new AuthResponseDto
                 {
                     IsSuccess = false,
-                    Message = errors
+                    Message = "Não foi possível associar o login externo ao utilizador."
                 };
             }
         }
@@ -217,24 +217,12 @@ public class AuthService : IAuthService
         var roles = await _userRepository.GetRolesAsync(user);
         if (!roles.Any())
         {
-            const string defaultRole = "Contabilista";
-            if (!await _userRepository.RoleExistsAsync(defaultRole))
+            if (!await _userRepository.AddToRoleAsync(user, defaultRole))
             {
                 return new AuthResponseDto
                 {
                     IsSuccess = false,
-                    Message = "A role padrão para utilizadores externos não existe no sistema."
-                };
-            }
-
-            var addRoleResult = await _userManager.AddToRoleAsync(user, defaultRole);
-            if (!addRoleResult.Succeeded)
-            {
-                var errors = string.Join("; ", addRoleResult.Errors.Select(e => e.Description));
-                return new AuthResponseDto
-                {
-                    IsSuccess = false,
-                    Message = errors
+                    Message = "Não foi possível atribuir a role padrão ao utilizador externo."
                 };
             }
 
@@ -243,18 +231,13 @@ public class AuthService : IAuthService
 
         var token = await _tokenService.GenerateTokenAsync(user);
         var userRole = roles.FirstOrDefault() ?? string.Empty;
-        var fullName = $"{user.FirstName} {user.LastName}".Trim();
+        var response = _mapper.Map<AuthResponseDto>(user);
+        response.IsSuccess = true;
+        response.Message = "Login externo efetuado com sucesso.";
+        response.Token = token;
+        response.Role = userRole;
 
-        return new AuthResponseDto
-        {
-            IsSuccess = true,
-            Message = "Login externo efetuado com sucesso.",
-            Token = token,
-            Email = user.Email,
-            FullName = fullName,
-            IsActive = user.IsActive,
-            Role = userRole
-        };
+        return response;
     }
 
     public Task<AuthResponseDto> LogoutAsync()
@@ -268,7 +251,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> ForgotPasswordAsync(ForgotPasswordDto model, string scheme, string host)
     {
-        var user = await _userManager.FindByEmailAsync(model.Email);
+        var user = await _userRepository.GetByEmailAsync(model.Email);
         if (user == null || !user.IsActive)
         {
             return new AuthResponseDto
@@ -278,7 +261,7 @@ public class AuthService : IAuthService
             };
         }
 
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var token = await _userRepository.GeneratePasswordResetTokenAsync(user);
 
         // Extrai apenas o nome do domínio/IP (removendo a porta da API se vier no 'host', ex: localhost:5001 -> localhost)
         var serverHost = host.Contains(':') ? host.Substring(0, host.IndexOf(':')) : host;
@@ -299,7 +282,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordDto model)
     {
-        var user = await _userManager.FindByEmailAsync(model.Email);
+        var user = await _userRepository.GetByEmailAsync(model.Email);
         if (user == null)
         {
             return new AuthResponseDto { IsSuccess = false, Message = "Invalid request." };
@@ -308,14 +291,13 @@ public class AuthService : IAuthService
         // Corrige o sinal '+' que o browser por vezes converte em espaço no URL do token
         var decodedToken = model.Token.Replace(" ", "+");
 
-        var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
+        var result = await _userRepository.ResetPasswordAsync(user, decodedToken, model.NewPassword);
 
-        if (result.Succeeded)
+        if (result)
         {
             return new AuthResponseDto { IsSuccess = true, Message = "Password reset successfully." };
         }
 
-        var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-        return new AuthResponseDto { IsSuccess = false, Message = errors };
+        return new AuthResponseDto { IsSuccess = false, Message = "Não foi possível redefinir a palavra-passe." };
     }
 }

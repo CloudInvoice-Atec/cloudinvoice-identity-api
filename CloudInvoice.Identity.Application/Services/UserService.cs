@@ -1,37 +1,33 @@
-﻿using CloudInvoice.Identity.Application.Dtos.Responses;
+﻿using AutoMapper;
+using CloudInvoice.Identity.Application.Dtos.Responses;
 using CloudInvoice.Identity.Application.Interfaces;
 using CloudInvoice.Identity.Domain.Entities;
 using CloudInvoice.Identity.Domain.Interfaces;
-using Microsoft.AspNetCore.Identity;
 
 namespace CloudInvoice.Identity.Application.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, IMapper mapper)
         {
             _userRepository = userRepository;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
         {
-            // Pede os dados já processados ao repositório
             var usersWithRoles = await _userRepository.GetAllUsersWithRolesAsync();
             var userResponses = new List<UserResponseDto>();
 
             foreach (var item in usersWithRoles)
             {
-                userResponses.Add(new UserResponseDto
-                {
-                    Id = item.User.Id,
-                    Email = item.User.Email ?? string.Empty,
-                    FirstName = item.User.FirstName,
-                    LastName = item.User.LastName,
-                    Role = GetRoleAsync(item.User.Id).Result, // Obtém o papel do utilizador
-                    IsActive = item.IsActive
-                });
+                var response = _mapper.Map<UserResponseDto>(item.User);
+                response.Role = item.Role;
+                response.IsActive = item.IsActive;
+                userResponses.Add(response);
             }
 
             return userResponses;
@@ -41,32 +37,17 @@ namespace CloudInvoice.Identity.Application.Services
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null) return null;
 
-            // Converte a entidade para o DTO esperado pela interface
-            return new UserResponseDto
-            {
-                Id = user.Id,
-                Email = user.Email ?? string.Empty,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Role = GetRoleAsync(user.Id).Result,
-                IsActive = user.IsActive
-            };
+            var response = _mapper.Map<UserResponseDto>(user);
+            response.Role = await GetRoleAsync(user.Id);
+            return response;
         }
 
         // --- CREATE (Criar Utilizador) ---
         public async Task<bool> CreateUserAsync(UserResponseDto dto, string password, string scheme, string host)
         {
-            // Aqui podes colocar regras de negócio antes de criar (ex: validar se o email já existe)
-            var user = new ApplicationUser
-            {
-                Id = dto.Id,
-                Email = dto.Email,
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                Role = GetRoleAsync(dto.Id).Result,
-                IsActive = dto.IsActive
-            };
-            return await _userRepository.CreateUserAsync(user, dto.Role, scheme, host);
+            var user = _mapper.Map<ApplicationUser>(dto);
+            user.IsActive = dto.IsActive;
+            return await _userRepository.CreateUserAsync(user, dto.Role);
         }
 
         public async Task<bool> UpdateUserAsync(string id, UserResponseDto dto)
@@ -74,12 +55,8 @@ namespace CloudInvoice.Identity.Application.Services
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null) return false;
 
-            // Atualiza os campos necessários
-            user.FirstName = dto.FirstName;
-            user.LastName = dto.LastName;
-            user.Email = dto.Email;
+            _mapper.Map(dto, user);
             user.IsActive = dto.IsActive;
-            // Podes atualizar outros campos conforme o teu DTO
 
             return await _userRepository.UpdateUserAsync(user);
         }

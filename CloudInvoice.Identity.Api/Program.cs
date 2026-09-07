@@ -1,4 +1,5 @@
 using CloudInvoice.Identity.Application.Interfaces;
+using CloudInvoice.Identity.Application.Mappings;
 using CloudInvoice.Identity.Infrastructure;
 using CloudInvoice.Identity.Infrastructure.Data;
 using CloudInvoice.Identity.Infrastructure.Services;
@@ -14,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1. Adicionar controladores
 builder.Services.AddControllers();
+builder.Services.AddAutoMapper(typeof(IdentityProfile).Assembly);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
