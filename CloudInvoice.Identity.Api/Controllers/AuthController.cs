@@ -120,6 +120,7 @@ public class AuthController : ControllerBase
                     Message = "Falha ao validar o login externo."
                 });
             }
+            var model = new LoginRequestDto();
 
             var authenticationScheme = GetExternalProviderScheme(provider);
             if (authenticationScheme is null)
@@ -131,10 +132,20 @@ public class AuthController : ControllerBase
                 });
             }
 
-            var result = await _authService.ExternalLoginAsync(authenticationScheme, authenticateResult.Principal);
+            var result = await _authService.ExternalLoginAsync(authenticationScheme, authenticateResult.Principal, model);
+
             if (!result.IsSuccess)
             {
-                return BadRequest(result);
+                // REDIRECIONAMENTO DIRETO PARA O LOGIN DO BLAZOR
+                var loginPageUrl = "https://localhost:7085/";
+
+                string mensagemRealDaApi = string.IsNullOrWhiteSpace(result.Message)
+                    ? "Falha ao iniciar sessão com o fornecedor externo."
+                    : result.Message;
+
+                var errorRedirectUrl = QueryHelpers.AddQueryString(loginPageUrl, "apiError", mensagemRealDaApi);
+
+                return Redirect(errorRedirectUrl);
             }
 
             returnUrl ??= _configuration["Frontend:AuthCallbackUrl"];
