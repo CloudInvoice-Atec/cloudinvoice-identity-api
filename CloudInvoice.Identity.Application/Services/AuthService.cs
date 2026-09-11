@@ -121,7 +121,7 @@ public class AuthService : IAuthService
         return response;
     }
 
-    public async Task<AuthResponseDto> ExternalLoginAsync(string provider, ClaimsPrincipal principal)
+    public async Task<AuthResponseDto> ExternalLoginAsync(string provider, ClaimsPrincipal principal, LoginRequestDto model)
     {
         if (string.IsNullOrWhiteSpace(provider))
         {
@@ -173,24 +173,11 @@ public class AuthService : IAuthService
 
         if (user == null)
         {
-            user = new ApplicationUser
+            return new AuthResponseDto
             {
-                UserName = email,
-                Email = email,
-                FirstName = firstName,
-                LastName = lastName,
-                IsActive = true
+                IsSuccess = false,
+                Message = "Credenciais inválidas ou conta inativa."
             };
-
-            var created = await _userRepository.CreateUserAsync(user, defaultRole);
-            if (!created)
-            {
-                return new AuthResponseDto
-                {
-                    IsSuccess = false,
-                    Message = "Não foi possível criar o utilizador externo."
-                };
-            }
         }
 
         if (!user.IsActive)
@@ -199,6 +186,16 @@ public class AuthService : IAuthService
             {
                 IsSuccess = false,
                 Message = "Esta conta encontra-se inativa."
+            };
+        }
+
+        var isPasswordValid = await _userRepository.CheckPasswordAsync(user, model.Password);
+        if (!isPasswordValid)
+        {
+            return new AuthResponseDto
+            {
+                IsSuccess = false,
+                Message = "E-mail ou palavra-passe incorretos."
             };
         }
 

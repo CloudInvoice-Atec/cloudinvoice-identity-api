@@ -12,5 +12,5 @@ public interface IAuthService
     Task<AuthResponseDto> LogoutAsync();
     Task<AuthResponseDto> ForgotPasswordAsync(ForgotPasswordDto model, string scheme, string host);
     Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordDto model);
-    Task<AuthResponseDto> ExternalLoginAsync(string provider, ClaimsPrincipal principal);
+    Task<AuthResponseDto> ExternalLoginAsync(string provider, ClaimsPrincipal principal, LoginRequestDto model);
 }
