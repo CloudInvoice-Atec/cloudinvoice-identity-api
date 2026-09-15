@@ -15,8 +15,6 @@ namespace CloudInvoice.Identity.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            // É aqui que no futuro podes configurar relações entre tabelas, 
-            // caso a base de dados de segurança venha a crescer.
         }
     }
 }

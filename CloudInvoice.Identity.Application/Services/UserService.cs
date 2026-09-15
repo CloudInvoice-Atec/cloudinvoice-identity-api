@@ -42,7 +42,6 @@ namespace CloudInvoice.Identity.Application.Services
             return response;
         }
 
-        // --- CREATE (Criar Utilizador) ---
         public async Task<bool> CreateUserAsync(UserResponseDto dto, string password, string scheme, string host)
         {
             var user = _mapper.Map<ApplicationUser>(dto);
@@ -60,7 +59,7 @@ namespace CloudInvoice.Identity.Application.Services
 
             return await _userRepository.UpdateUserAsync(user);
         }
-        // --- DELETE (Eliminar Utilizador) ---
+
         public async Task<bool> DeleteUserAsync(string id, string currentUserId)
         {
             if (string.Equals(id, currentUserId, StringComparison.OrdinalIgnoreCase))

@@ -13,7 +13,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Adicionar controladores
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(IdentityProfile).Assembly);
 builder.Services.AddEndpointsApiExplorer();
@@ -46,10 +45,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// 2. Chamar o método de extensão da Infraestrutura
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// 3. Configurar a Autenticação (JWT + Google + Microsoft)
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret não configurado.");
 
@@ -93,7 +90,6 @@ var app = builder.Build();
 app.UseStaticFiles();
 app.UseMiddleware<ExceptionMiddleware>();
 
-// 5. Executar o Seeder de Roles ao iniciar a aplicação
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -116,7 +112,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Importante: Authentication tem de vir SEMPRE antes de Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
