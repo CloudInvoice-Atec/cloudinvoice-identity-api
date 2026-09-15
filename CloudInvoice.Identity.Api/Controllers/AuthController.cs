@@ -25,6 +25,11 @@ public class AuthController : ControllerBase
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// Regista um novo utilizador com base no modelo fornecido. Apenas utilizadores com a role "Admin" podem aceder a este endpoint.
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns>Um objeto AuthResponseDto com o resultado da operação.</returns>
     [HttpPost("register")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
@@ -54,6 +59,11 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Autentica um utilizador com base no modelo fornecido. Retorna um token JWT se a autenticação for bem-sucedida.
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns>Um objeto AuthResponseDto com o resultado da operação.</returns>
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
     {
@@ -72,6 +82,10 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Inicia o processo de login externo com base no provedor especificado. Redireciona o utilizador para a página de autenticação do provedor externo.
+    /// </summary>
+    /// <returns>Um objeto IActionResult que representa a resposta da requisição.</returns>
     [HttpGet("external-login")]
     [HttpGet("external-login/{provider}")]
     [AllowAnonymous]
@@ -105,6 +119,10 @@ public class AuthController : ControllerBase
         return Challenge(properties, authenticationScheme);
     }
 
+    /// <summary>
+    /// Callback para o login externo. Este endpoint é chamado pelo provedor externo após a autenticação do utilizador. Processa a resposta do provedor e retorna um token JWT se a autenticação for bem-sucedida.
+    /// </summary>
+    /// <returns>Um objeto IActionResult que representa a resposta da requisição.</returns>
     [HttpGet("external-login/{provider}/callback")]
     [AllowAnonymous]
     public async Task<IActionResult> ExternalLoginCallback(string provider, [FromQuery] string? returnUrl = null)
@@ -171,6 +189,10 @@ public class AuthController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Encerra a sessão do utilizador autenticado. Este endpoint requer autenticação e invalida o token JWT atual.
+    /// </summary>
+    /// <returns>Um objeto IActionResult que representa a resposta da requisição.</returns>
     [HttpPost("logout")]
     [Authorize]
     public async Task<IActionResult> Logout()
@@ -179,6 +201,11 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Inicia o processo de recuperação de senha para um utilizador com base no modelo fornecido. Envia um email com instruções para redefinir a senha.
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns>Um objeto IActionResult que representa a resposta da requisição.</returns>
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
     {
@@ -194,6 +221,11 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Redefine a senha de um utilizador com base no modelo fornecido. Este endpoint é chamado após o utilizador clicar no link de redefinição de senha enviado por email.
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns>Um objeto IActionResult que representa a resposta da requisição.</returns>
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
     {

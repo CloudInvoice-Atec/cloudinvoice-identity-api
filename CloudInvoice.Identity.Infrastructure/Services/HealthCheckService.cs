@@ -19,7 +19,6 @@ namespace CloudInvoice.Identity.Infrastructure.Services
 
         public async Task<bool> CanConnectAsync()
         {
-            // Usa o mecanismo nativo do EF Core para testar a ligação à BD
             return await _context.Database.CanConnectAsync();
         }
     }

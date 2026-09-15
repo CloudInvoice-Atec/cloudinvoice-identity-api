@@ -51,7 +51,6 @@ public class AuthService : IAuthService
         var user = _mapper.Map<ApplicationUser>(model);
         user.IsActive = true;
 
-        // O Repositório trata de criar, gerar o token, montar o email e enviá-lo
         var created = await _userRepository.CreateUserAsync(user, model.Role);
         if (!created)
         {
@@ -260,10 +259,8 @@ public class AuthService : IAuthService
 
         var token = await _userRepository.GeneratePasswordResetTokenAsync(user);
 
-        // Extrai apenas o nome do domínio/IP (removendo a porta da API se vier no 'host', ex: localhost:5001 -> localhost)
         var serverHost = host.Contains(':') ? host.Substring(0, host.IndexOf(':')) : host;
 
-        // Constrói o link apontando explicitamente para a porta 7085 do Frontend Blazor
         var resetLink = $"{scheme}://{serverHost}:7085/account/reset-password?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}";
 
         var mensagemHtml = EmailTemplates.GetPasswordResetEmail(user.FirstName, resetLink);
@@ -285,7 +282,6 @@ public class AuthService : IAuthService
             return new AuthResponseDto { IsSuccess = false, Message = "Invalid request." };
         }
 
-        // Corrige o sinal '+' que o browser por vezes converte em espaço no URL do token
         var decodedToken = model.Token.Replace(" ", "+");
 
         var result = await _userRepository.ResetPasswordAsync(user, decodedToken, model.NewPassword);

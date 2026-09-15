@@ -18,7 +18,10 @@ namespace CloudInvoice.Identity.Api.Controllers
             _userService = userService;
         }
 
-        // --- ENDPOINT: GET /api/users ---
+        /// <summary>
+        /// Obtém todos os utilizadores. Apenas utilizadores com a role "Admin" podem aceder a este endpoint.
+        /// </summary>
+        /// <returns>Um objeto IActionResult que representa a resposta da requisição.</returns>
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -26,6 +29,12 @@ namespace CloudInvoice.Identity.Api.Controllers
             return Ok(users);
         }
 
+        /// <summary>
+        /// Atualiza as informações de um utilizador específico. Apenas utilizadores com a role "Admin" podem aceder a este endpoint.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="dto"></param>
+        /// <returns>Um objeto IActionResult que representa a resposta da requisição.</returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UserResponseDto dto)
         {
@@ -39,7 +48,11 @@ namespace CloudInvoice.Identity.Api.Controllers
             return NoContent(); // Sucesso (204)
         }
 
-        // --- ENDPOINT: DELETE /api/users/{id} ---
+        /// <summary>
+        /// Elimina um utilizador específico. Apenas utilizadores com a role "Admin" podem aceder a este endpoint.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>Um objeto IActionResult que representa a resposta da requisição.</returns>        
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
@@ -64,6 +77,11 @@ namespace CloudInvoice.Identity.Api.Controllers
             return NoContent(); // Sucesso, sem conteúdo adicional (204)
         }
 
+        /// <summary>
+        /// Obtém um utilizador específico pelo seu ID. Apenas utilizadores com a role "Admin" podem aceder a este endpoint.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>Um objeto IActionResult que representa a resposta da requisição.</returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(string id)
         {
