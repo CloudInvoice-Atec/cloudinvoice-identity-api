@@ -18,6 +18,7 @@ namespace CloudInvoice.Identity.Api.Controllers
         /// <summary>
         /// Verifica se a API está online e se a Base de Dados está acessível.
         /// </summary>
+        /// <returns>Um objeto IActionResult que representa a resposta da requisição.</returns>
         [HttpGet("health")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

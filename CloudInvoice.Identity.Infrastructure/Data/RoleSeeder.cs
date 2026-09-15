@@ -12,19 +12,16 @@ public static class RoleSeeder
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        // 1. Garantir que a role Admin existe
         if (!await roleManager.RoleExistsAsync("Admin"))
         {
             await roleManager.CreateAsync(new IdentityRole("Admin"));
         }
 
-        // 2. Garantir que a role Contabilista existe
         if (!await roleManager.RoleExistsAsync("Contabilista"))
         {
             await roleManager.CreateAsync(new IdentityRole("Contabilista"));
         }
 
-        // 3. Criar o utilizador Admin se não existir
         var adminEmail = "admin@cloudinvoice.com";
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
         if (adminUser == null)

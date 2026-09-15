@@ -17,11 +17,9 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // 1. Configurar a Base de Dados (Entity Framework Core)
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-        // 2. Configurar o ASP.NET Core Identity
         services.AddIdentity<ApplicationUser, IdentityRole>(options =>
         {
             options.Password.RequireDigit = true;
@@ -33,12 +31,10 @@ public static class DependencyInjection
         .AddDefaultTokenProviders()
         .AddErrorDescriber<CustomIdentityErrorService>();
 
-        // 3. Registar Repositórios e Serviços de Infraestrutura
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUserService, UserService>();
 
-        // 4. Registar o Serviço de Autenticação da Application
         services.AddScoped<IAuthService, AuthService>();
         services.AddTransient<IEmailService, EmailService>();
 
